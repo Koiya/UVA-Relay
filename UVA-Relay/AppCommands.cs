@@ -20,7 +20,7 @@ namespace UVA_Relay {
         
     }
 
-    [SlashCommandGroup("fetch", "Fetch commands.")]
+    [SlashCommandGroup("fetch", "Fetch commands..")]
     public class FetchCommandGroup : ApplicationCommandModule {
         
         [SlashCommand("summary", "Fetches a concise summary of a course.")]
@@ -37,8 +37,8 @@ namespace UVA_Relay {
 
                 var baseEmbed = MakeOkEmbed(course.Name, course.Id.ToString()).AddField("Term", course.Term?.Name ?? "n/a");
                 var assignmentSummaryEmbed = MakeOkEmbed("Upcoming Due Dates");
-
-                var assignments = await CanvasApi.StreamCourseAssignments(course.Id, AssignmentInclusions.AllDates, orderBy: "due_at")
+                
+                var assignments = await CanvasApi.StreamCourseAssignments(course.Id, AssignmentIncludes.AllDates, orderBy: "due_at")
                                                  .Where(a => a.Published)
                                                  .Where(a => a.DueAt != null)
                                                  .ToListAsync();
@@ -70,7 +70,7 @@ namespace UVA_Relay {
                                           new DiscordInteractionResponseBuilder().WithContent("Gimme a sec."));
 
             try {
-                var assignments = await CanvasApi.StreamCourseAssignments((ulong) courseId, AssignmentInclusions.AllDates, orderBy: "due_at")
+                var assignments = await CanvasApi.StreamCourseAssignments((ulong) courseId, AssignmentIncludes.AllDates, orderBy: "due_at")
                                                  .Where(a => a.Published)
                                                  .Where(a => a.DueAt != null)
                                                  .Select(a => (a.Name, a.DueAt?.FriendlyFormat()))
@@ -95,7 +95,7 @@ namespace UVA_Relay {
         }
     }
     
-    [SlashCommandGroup("ping", "Ping commands.")]
+    [SlashCommandGroup("ping", "Ping commands..")]
     public class PingCommandGroup : ApplicationCommandModule {
         
         [SlashCommand("bot", "Pings the bot.")]

@@ -14,7 +14,8 @@ namespace UVA_Relay {
                                        "https://uview.instructure.com/api/v1/");
             
             var discord = new DiscordClient(new DiscordConfiguration {
-                Token = Environment.GetEnvironmentVariable("UVA_RELAY_TOKEN") ?? throw new NullReferenceException("UVA_RELAY_TOKEN is unset"),
+                //Token = Environment.GetEnvironmentVariable("UVA_RELAY_TOKEN") ?? throw new NullReferenceException("UVA_RELAY_TOKEN is unset"),
+                Token = Environment.GetEnvironmentVariable("BOT_TOKEN"),
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
@@ -25,10 +26,13 @@ namespace UVA_Relay {
                 AckPaginationButtons = true,
                 PaginationBehaviour = PaginationBehaviour.Ignore
             });
-
+            /*
             var testGuildId = ulong.Parse(Environment.GetEnvironmentVariable("UVA_RELAY_TEST_GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
-            
+            */
+            var testGuildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILD_ID")
+                                          ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
+
             var slash = discord.UseSlashCommands();
             slash.RegisterCommands<AppCommands>(testGuildId);
             slash.RegisterCommands<PingCommandGroup>(testGuildId);

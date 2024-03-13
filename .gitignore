@@ -1,5 +1,7 @@
 bin/
 obj/
 /packages/
+.idea/
+UVA-Relay/.idea/
 riderModule.iml
 /_ReSharper.Caches/
