@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
@@ -21,9 +23,9 @@ namespace UVA_Relay {
             });
 
             await discord.ConnectAsync();
+            // Get the bot's guilds
 
             discord.UseInteractivity(new InteractivityConfiguration {
-                AckPaginationButtons = true,
                 PaginationBehaviour = PaginationBehaviour.Ignore
             });
             /*
@@ -32,12 +34,30 @@ namespace UVA_Relay {
             */
             var testGuildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
-
             var slash = discord.UseSlashCommands();
+            discord.GuildDownloadCompleted += async(s, e) =>
+            {
+                var guilds = discord.Guilds;
+ 
+                // Loop through the guilds and print their IDs
+                foreach (var guild in guilds)
+                {
+                    ulong guildId = guild.Key;
+
+                    Console.WriteLine($"Guild Name: {guild.Value.Name}, Guild ID: {guildId}");
+                }
+            };
+            
             slash.RegisterCommands<AppCommands>(testGuildId);
             slash.RegisterCommands<PingCommandGroup>(testGuildId);
             slash.RegisterCommands<FetchCommandGroup>(testGuildId);
-
+            slash.RegisterCommands<GetCommandGroup>(testGuildId);
+            
+            //turn into global commands for multiple servers
+            /*slash.RegisterCommands<AppCommands>();
+            slash.RegisterCommands<PingCommandGroup>();
+            slash.RegisterCommands<FetchCommandGroup>();
+            slash.RegisterCommands<GetCommandGroup>();*/
             await Task.Delay(-1);
         }
     }

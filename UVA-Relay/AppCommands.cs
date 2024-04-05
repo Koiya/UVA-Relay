@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using UVA_Relay.sql;
 using UVACanvasAccess.Util;
 using static DSharpPlus.InteractionResponseType;
 using static UVA_Relay.Canvas;
@@ -16,6 +18,7 @@ using static UVACanvasAccess.ApiParts.Api;
 
 // ReSharper disable ClassNeverInstantiated.Global
 namespace UVA_Relay {
+    
     public class AppCommands : ApplicationCommandModule {
         
     }
@@ -95,15 +98,15 @@ namespace UVA_Relay {
         }
     }
     
-    [SlashCommandGroup("ping", "Ping commands..")]
+    [SlashCommandGroup("ping", "Ping commands.")]
     public class PingCommandGroup : ApplicationCommandModule {
         
-        [SlashCommand("bot", "Pings the bot.")]
+        [SlashCommand("bot", "Pings the bot..")]
         public async Task Ping(InteractionContext ctx) {
             await ctx.CreateResponseAsync(ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Pong."));
         }
 
-        [SlashCommand("canvas", "Pings Canvas.")]
+        [SlashCommand("canvas", "Pings Canvas..")]
         public async Task CanvasPing(InteractionContext ctx) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
 
@@ -125,6 +128,44 @@ namespace UVA_Relay {
                     new DiscordWebhookBuilder().AddEmbed(MakeErrorEmbed("I'm having trouble connecting to Canvas", "Exception from API."))
                 );
             } 
+            
+        }
+    }
+
+    [SlashCommandGroup("get", "Get information")]
+    public class GetCommandGroup : ApplicationCommandModule
+    {
+        
+        [SlashCommand("user", "get user information")]
+        public async Task UserInfo(InteractionContext ctx)
+        {  
+            await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
+            try
+            {
+                SQL db = new SQL();
+                string guildId = ctx.Guild.Id.ToString();
+                string result = db.GetQuery(guildId);
+                await ctx.EditResponseAsync(
+                    new DiscordWebhookBuilder().WithContent($"GUILD ID: {guildId} QUERIED: {result}")
+                    );
+            }
+            catch (Exception ex)
+            {
+                await ctx.EditResponseAsync(
+                    new DiscordWebhookBuilder().WithContent($"Error getting information. {ex.ToString()}"));
+            }
+            
+
+        }
+
+        [SlashCommand("test", "test")]
+        public async Task TestInfo(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            await Task.Delay(1000);
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Thanks for waiting!"));
         }
     }
 }
