@@ -8,6 +8,8 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using UVACanvasAccess.ApiParts;
+//TODO 
+// INSTALL TOML LIBRARY Tomlyn
 
 namespace UVA_Relay {
     internal static class Program {
@@ -23,7 +25,6 @@ namespace UVA_Relay {
             });
 
             await discord.ConnectAsync();
-            // Get the bot's guilds
 
             discord.UseInteractivity(new InteractivityConfiguration {
                 PaginationBehaviour = PaginationBehaviour.Ignore
@@ -35,6 +36,9 @@ namespace UVA_Relay {
             var testGuildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
             var slash = discord.UseSlashCommands();
+            
+            // Get all the guilds the bot is in
+            //used for setting up database later
             discord.GuildDownloadCompleted += async(s, e) =>
             {
                 var guilds = discord.Guilds;
@@ -47,11 +51,15 @@ namespace UVA_Relay {
                     Console.WriteLine($"Guild Name: {guild.Value.Name}, Guild ID: {guildId}");
                 }
             };
+            //DELETES GUILD COMMANDS
+            //slash.RegisterCommands<ApplicationCommandModule>();
             
+            //creates guild commands
             slash.RegisterCommands<AppCommands>(testGuildId);
             slash.RegisterCommands<PingCommandGroup>(testGuildId);
             slash.RegisterCommands<FetchCommandGroup>(testGuildId);
             slash.RegisterCommands<GetCommandGroup>(testGuildId);
+            
             
             //turn into global commands for multiple servers
             /*slash.RegisterCommands<AppCommands>();

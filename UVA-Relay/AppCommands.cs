@@ -142,6 +142,7 @@ namespace UVA_Relay {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
             try
             {
+                //gets database query result
                 SQL db = new SQL();
                 string guildId = ctx.Guild.Id.ToString();
                 string result = db.GetQuery(guildId);

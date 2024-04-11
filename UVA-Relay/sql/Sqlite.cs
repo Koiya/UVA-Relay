@@ -2,7 +2,7 @@ using System;
 using System.Data.SQLite;
 /*
  TODO
- - Design a table for user/server settings 
+ - set up sqlite with a test server
  - Implement a way to save or store settings 
  - Display guild settings with embed message
     Name
@@ -16,7 +16,8 @@ namespace UVA_Relay.sql
 {
     public class SQL
     {
-        private string dbFile = "Data Source=C:\\Users\\daniel.nguyen\\OneDrive - University View Academy\\Documents\\GitHub\\UVA-Relay\\UVA-Relay\\sql\\test.db";
+        //db set as a file instead of server for now
+        private string dbFile = "Data Source=" + Environment.GetEnvironmentVariable("fileDB");
         public string GetQuery(string guildID){ 
             
             string result = "";
