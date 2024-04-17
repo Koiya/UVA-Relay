@@ -17,11 +17,11 @@ namespace UVA_Relay.sql
     public class SQL
     {
         //db set as a file instead of server for now
-        private string dbFile = "Data Source=" + Environment.GetEnvironmentVariable("fileDB");
-        public string GetQuery(string guildID){ 
-            
+        private string _dbFile = "Data Source=" + Environment.GetEnvironmentVariable("fileDB");
+        //Test getting query and returning result
+        public string GetQuery(string guildId){ 
             string result = "";
-            var s = new SQLiteConnection(@dbFile);
+            var s = new SQLiteConnection(@_dbFile);
             try
             {
                 using (s)
@@ -29,7 +29,7 @@ namespace UVA_Relay.sql
                     using (var cmd = s.CreateCommand())
                     {
                         s.Open();
-                        cmd.CommandText = $"SELECT id FROM GUILD where guildID = {guildID}";
+                        cmd.CommandText = $"SELECT id FROM GUILD where guildID = {guildId}";
                         result = cmd.ExecuteScalar().ToString();
                     }
                 }
@@ -42,24 +42,36 @@ namespace UVA_Relay.sql
 
         }
 
-       
-        public static void saveGuildSetting(){ 
+       //Adds guild ID to database
+        public void AddGuildToDatabase(string guildName, ulong guildId){ 
+            var s = new SQLiteConnection(@_dbFile);
             try
             {
-                var s = new SQLiteConnection("test.db");
                 using (s)
                 {
                     using (var cmd = s.CreateCommand())
                     {
                         s.Open();
-                        cmd.CommandText = "SELECT id FROM GUILD";
-
+                        cmd.CommandText = "INSERT INTO GUILD (GuildName, GuildId) VALUES(@nameQuery, @idQuery)";
+                        //Safest way to insert data without sql injections?
+                        var nameParameter = cmd.CreateParameter();
+                        var idParameter = cmd.CreateParameter();
+                        nameParameter.ParameterName = "@nameQuery";
+                        idParameter.ParameterName = "@idQuery";
+                        cmd.Parameters.Add(nameParameter);
+                        cmd.Parameters.Add(idParameter);
+                        nameParameter.Value = guildName;
+                        idParameter.Value = guildId;
+                        //Execute query
+                        cmd.ExecuteNonQuery();
                     }
                 }
             }
             catch (SQLiteException exc)
             {
-                Console.WriteLine(exc.Message);
+                //Console.WriteLine(exc.Message);
+                Console.WriteLine("Guild already in database or error has occured");
+
             }
         }
     }

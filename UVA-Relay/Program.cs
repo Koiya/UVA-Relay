@@ -12,11 +12,14 @@ using DSharpPlus.SlashCommands;
 using Tomlet.Models;
 using UVACanvasAccess.ApiParts;
 using UVACanvasAccess.Util;
+using UVA_Relay.sql;
 
 namespace UVA_Relay {
     internal static class Program {
         public static async Task Main()
         {
+            //SQL initialize
+            SQL db = new SQL();
             // Get tokens from toml file
             TomlDocument document = TomlParser.ParseFile(@Environment.GetEnvironmentVariable("config"));
             // document.GetSubTable("keys").GetString("BOT_TOKEN"));
@@ -45,17 +48,29 @@ namespace UVA_Relay {
             
             // Get all the guilds the bot is in
             //used for setting up database later
-            discord.GuildDownloadCompleted += async(s, e) =>
+            discord.GuildDownloadCompleted += (s, e) =>
             {
                 var guilds = discord.Guilds;
  
                 // Loop through the guilds and print their IDs
                 foreach (var guild in guilds)
                 {
-                    ulong guildId = guild.Key;
+                    try
+                    {
+                        //gets database query result and add guild ids to database
+                        ulong guildId = guild.Key;
+                        string guildName = guild.Value.Name;
+                        db.AddGuildToDatabase(guildName, guildId);
+                        Console.WriteLine($"Guild Name:{guildName}, Guild ID: {guildId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
 
-                    Console.WriteLine($"Guild Name: {guild.Value.Name}, Guild ID: {guildId}");
                 }
+
+                return Task.CompletedTask;
             };
             //DELETES GUILD COMMANDS
             //slash.RegisterCommands<ApplicationCommandModule>();

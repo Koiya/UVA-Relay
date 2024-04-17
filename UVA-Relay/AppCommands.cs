@@ -168,5 +168,27 @@ namespace UVA_Relay {
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Thanks for waiting!"));
         }
+        /*[SlashCommand("add", "test")]
+        public async Task AddTest(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            try
+            {
+                //gets database query result
+                SQL db = new SQL();
+                ulong guildId = ctx.Guild.Id;
+                string guildName = ctx.Guild.Name.ToString();
+                db.AddGuildToDatabase(guildName, guildId);
+                await ctx.EditResponseAsync(
+                    new DiscordWebhookBuilder()
+                        .WithContent($"Added Guild Name:{guildName}, Guild ID: {guildId}"));
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }*/
     }
 }
