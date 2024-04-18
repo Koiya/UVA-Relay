@@ -9,12 +9,25 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using UVA_Relay.sql;
 using UVACanvasAccess.Util;
 using static DSharpPlus.InteractionResponseType;
 using static UVA_Relay.Canvas;
 using static UVA_Relay.Utils;
 using static UVACanvasAccess.ApiParts.Api;
+/*
+ * TODO
+ * Make update command to update users information into the database
+ * Maybe make one for individual and one for all
+   /update user {guildid} {userid}
+   /update allUsers   
+ * Make command to insert new users into database
+ * gathers all users in that guild and insert into database
+   /get users insert {guildid} 
+ * after making update command, can make update settings command
+ */
+
 
 // ReSharper disable ClassNeverInstantiated.Global
 namespace UVA_Relay {
@@ -101,7 +114,7 @@ namespace UVA_Relay {
     [SlashCommandGroup("ping", "Ping commands.")]
     public class PingCommandGroup : ApplicationCommandModule {
         
-        [SlashCommand("bot", "Pings the bot..")]
+        [SlashCommand("bot", "Pings the bot.."),SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task Ping(InteractionContext ctx) {
             await ctx.CreateResponseAsync(ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Pong."));
         }
@@ -159,7 +172,7 @@ namespace UVA_Relay {
 
         }
 
-        [SlashCommand("test", "test")]
+        [SlashCommand("test", "test"), SlashCooldown(1,1, SlashCooldownBucketType.User)]
         public async Task TestInfo(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);

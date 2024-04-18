@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
@@ -16,6 +19,7 @@ using UVA_Relay.sql;
 
 namespace UVA_Relay {
     internal static class Program {
+
         public static async Task Main()
         {
             //SQL initialize
@@ -45,7 +49,9 @@ namespace UVA_Relay {
             var testGuildId = ulong.Parse(document.GetSubTable("keys").GetString("GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
             var slash = discord.UseSlashCommands();
-            
+            var cmdNext = discord.UseCommandsNext(new CommandsNextConfiguration());
+            cmdNext.CommandErrored += Utils.CmdErroredHandler;
+
             // Get all the guilds the bot is in
             //used for setting up database later
             discord.GuildDownloadCompleted += (s, e) =>

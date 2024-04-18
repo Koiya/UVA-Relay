@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 
 namespace UVA_Relay {
@@ -55,6 +58,18 @@ namespace UVA_Relay {
         internal static IEnumerable<(T, int)> ZipCount<T>(this IEnumerable<T> ie) {
             List<T> list = ie.ToList();
             return list.ZipT(Enumerable.Range(0, list.Count));
+        }
+        public static async Task CmdErroredHandler(CommandsNextExtension _, CommandErrorEventArgs e)
+        {
+            var failedChecks = ((ChecksFailedException)e.Exception).FailedChecks;
+            foreach (var failedCheck in failedChecks)
+            {
+                if (failedCheck is CooldownAttribute)
+                {
+                    var cdAttribute = (CooldownAttribute)failedCheck;
+                    await e.Context.RespondAsync($"Only usable during {cdAttribute}.");
+                }
+            }
         }
     }
 }
