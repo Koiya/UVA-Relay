@@ -51,7 +51,6 @@ namespace UVA_Relay {
             discord.GuildDownloadCompleted += (s, e) =>
             {
                 var guilds = discord.Guilds;
- 
                 // Loop through the guilds and print their IDs
                 foreach (var guild in guilds)
                 {
@@ -60,6 +59,13 @@ namespace UVA_Relay {
                         //gets database query result and add guild ids to database
                         ulong guildId = guild.Key;
                         string guildName = guild.Value.Name;
+                        var memCount = guild.Value.Members;
+                        foreach (var member in memCount)
+                        {
+                            ulong memId = member.Key;
+                            db.AddUsersToDatabase(memId,guildId);
+                            Console.WriteLine(member.Value.Username);
+                        }
                         db.AddGuildToDatabase(guildName, guildId);
                         Console.WriteLine($"Guild Name:{guildName}, Guild ID: {guildId}");
                     }

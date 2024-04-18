@@ -18,8 +18,10 @@ namespace UVA_Relay.sql
     {
         //db set as a file instead of server for now
         private string _dbFile = "Data Source=" + Environment.GetEnvironmentVariable("fileDB");
+
         //Test getting query and returning result
-        public string GetQuery(string guildId){ 
+        public string GetQuery(string guildId)
+        {
             string result = "";
             var s = new SQLiteConnection(@_dbFile);
             try
@@ -38,12 +40,14 @@ namespace UVA_Relay.sql
             {
                 Console.WriteLine(exc.Message);
             }
+
             return result;
 
         }
 
-       //Adds guild ID to database
-        public void AddGuildToDatabase(string guildName, ulong guildId){ 
+        //Adds guild ID to database
+        public void AddGuildToDatabase(string guildName, ulong guildId)
+        {
             var s = new SQLiteConnection(@_dbFile);
             try
             {
@@ -71,6 +75,46 @@ namespace UVA_Relay.sql
             {
                 //Console.WriteLine(exc.Message);
                 Console.WriteLine("Guild already in database or error has occured");
+
+            }
+
+        }
+
+        //Adds users to database
+        public void AddUsersToDatabase(ulong discordId, ulong guildId)
+        {
+            var s = new SQLiteConnection(@_dbFile);
+            try
+            {
+                using (s)
+                {
+                    using (var cmd = s.CreateCommand())
+                    {
+                        s.Open();
+                        //"INSERT INTO USER (discordId, canvasId) VALUES(@discordIdQuery, @canvasIdQuery)";
+                        cmd.CommandText = "INSERT INTO USER (discordId, guildId) VALUES(@discordIdQuery, @guildIdQuery)";
+                        //Safest way to insert data without sql injections?
+                        var discordIdParameter = cmd.CreateParameter();
+                        //var canvasIdParameter = cmd.CreateParameter();
+                        var guildIdParameter = cmd.CreateParameter();
+                        discordIdParameter.ParameterName = "@discordIdQuery";
+                        guildIdParameter.ParameterName = "@guildIdQuery";
+                        //canvasIdParameter.ParameterName = "@canvasIdQuery";
+                        cmd.Parameters.Add(discordIdParameter);
+                        cmd.Parameters.Add(guildIdParameter);
+                        //cmd.Parameters.Add(canvasIdParameter);
+                        discordIdParameter.Value = discordId;
+                        guildIdParameter.Value = guildId;
+                        //canvasIdParameter.Value = ;
+                        //Execute query
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SQLiteException exc)
+            {
+                Console.WriteLine(exc.Message);
+                //Console.WriteLine("User already in database or error has occured");
 
             }
         }
