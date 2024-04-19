@@ -6,6 +6,9 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.SlashCommands.EventArgs;
 
 namespace UVA_Relay {
     internal static class Utils {
@@ -59,15 +62,16 @@ namespace UVA_Relay {
             List<T> list = ie.ToList();
             return list.ZipT(Enumerable.Range(0, list.Count));
         }
-        public static async Task CmdErroredHandler(CommandsNextExtension _, CommandErrorEventArgs e)
+        //Command error handler when using command attributes
+        public static async Task CmdErroredHandler(SlashCommandsExtension _, SlashCommandErrorEventArgs e)
         {
-            var failedChecks = ((ChecksFailedException)e.Exception).FailedChecks;
+            var failedChecks = ((SlashExecutionChecksFailedException)e.Exception).FailedChecks;
             foreach (var failedCheck in failedChecks)
             {
-                if (failedCheck is CooldownAttribute)
+                if (failedCheck is SlashCooldownAttribute)
                 {
-                    var cdAttribute = (CooldownAttribute)failedCheck;
-                    await e.Context.RespondAsync($"Only usable during {cdAttribute}.");
+                    var cdAttribute = (SlashCooldownAttribute)failedCheck;
+                    await e.Context.CreateResponseAsync($"Command can be used in {cdAttribute.GetRemainingCooldown(e.Context).Seconds} seconds.");
                 }
             }
         }

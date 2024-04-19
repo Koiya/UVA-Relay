@@ -49,8 +49,7 @@ namespace UVA_Relay {
             var testGuildId = ulong.Parse(document.GetSubTable("keys").GetString("GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
             var slash = discord.UseSlashCommands();
-            var cmdNext = discord.UseCommandsNext(new CommandsNextConfiguration());
-            cmdNext.CommandErrored += Utils.CmdErroredHandler;
+            slash.SlashCommandErrored += Utils.CmdErroredHandler;
 
             // Get all the guilds the bot is in
             //used for setting up database later
