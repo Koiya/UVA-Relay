@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -39,7 +40,7 @@ namespace UVA_Relay {
     [SlashCommandGroup("fetch", "Fetch commands..")]
     public class FetchCommandGroup : ApplicationCommandModule {
         
-        [SlashCommand("summary", "Fetches a concise summary of a course.")]
+        [SlashCommand("summary", "Fetches a concise summary of a course."), SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task FetchCourseSummary(InteractionContext ctx, 
                                              [Option("courseId", "The course ID.")] long courseId) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
@@ -79,7 +80,7 @@ namespace UVA_Relay {
             }
         }
 
-        [SlashCommand("assignments", "Fetches all upcoming assignments.")]
+        [SlashCommand("assignments", "Fetches all upcoming assignments."), SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task FetchUpcomingAssignments(InteractionContext ctx,
                                                    [Option("courseId", "The course ID.")] long courseId) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
@@ -119,7 +120,7 @@ namespace UVA_Relay {
             await ctx.CreateResponseAsync(ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Pong."));
         }
 
-        [SlashCommand("canvas", "Pings Canvas..")]
+        [SlashCommand("canvas", "Pings Canvas.."),SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task CanvasPing(InteractionContext ctx) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
 
@@ -149,7 +150,7 @@ namespace UVA_Relay {
     public class GetCommandGroup : ApplicationCommandModule
     {
         
-        [SlashCommand("user", "get user information")]
+        [SlashCommand("user", "get user information"), SlashCooldown(1,5,SlashCooldownBucketType.User)]
         public async Task UserInfo(InteractionContext ctx)
         {  
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -181,27 +182,54 @@ namespace UVA_Relay {
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Thanks for waiting!"));
         }
-        /*[SlashCommand("add", "test")]
-        public async Task AddTest(InteractionContext ctx)
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            try
-            {
-                //gets database query result
-                SQL db = new SQL();
-                ulong guildId = ctx.Guild.Id;
-                string guildName = ctx.Guild.Name.ToString();
-                db.AddGuildToDatabase(guildName, guildId);
-                await ctx.EditResponseAsync(
-                    new DiscordWebhookBuilder()
-                        .WithContent($"Added Guild Name:{guildName}, Guild ID: {guildId}"));
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }*/
     }
-}
+
+    [SlashCommandGroup("admin", "Commands for admin stuff")]
+    public class AdminCommandGroup : ApplicationCommandModule
+    {
+        [SlashCommandGroup("settings", "Update settings to a guild")]
+        public class AdminSubGroup : ApplicationCommandModule
+        {
+            [SlashCommand("optionOne", "Change option one")]
+            public async Task ChangeOptionOne(InteractionContext ctx, [Option("value", "change the value")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    //gets database query result
+                    SQL db = new SQL();
+                    ulong gid = ctx.Guild.Id;
+                    db.UpdateGuildSettings(gid, value,"optionOne");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated guild settings in Guild ID: {gid} with optionOne: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            [SlashCommand("optionTwo", "Change option one")]
+            public async Task ChangeOptionTwo(InteractionContext ctx, [Option("value", "change the value")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    //gets database query result
+                    SQL db = new SQL();
+                    ulong gid = ctx.Guild.Id;
+                    db.UpdateGuildSettings(gid, value,"optionTwo");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated guild settings in Guild ID: {gid} with optionTwo: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+    }
+}   

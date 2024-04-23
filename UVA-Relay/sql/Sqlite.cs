@@ -113,8 +113,44 @@ namespace UVA_Relay.sql
             }
             catch (SQLiteException exc)
             {
+                //Console.WriteLine(exc.Message);
+                Console.WriteLine("User already in database or error has occured");
+
+            }
+        }
+        //Update guild settings to database
+        public void UpdateGuildSettings(ulong guildId, long value, string option)
+        {
+            var s = new SQLiteConnection(@_dbFile);
+            try
+            {
+                using (s)
+                {
+                    using (var cmd = s.CreateCommand())
+                    {
+                        s.Open();
+                        cmd.CommandText = $"UPDATE GUILD SET {option} = @valueQuery WHERE GuildId = @GuildIdQuery";
+                        var optionParam = cmd.CreateParameter();
+                        var guildIdParameter = cmd.CreateParameter();
+                        var valueParameter = cmd.CreateParameter();
+                        optionParam.ParameterName = "@optionQuery";
+                        guildIdParameter.ParameterName = "@GuildIdQuery";
+                        valueParameter.ParameterName = "@valueQuery";
+                        cmd.Parameters.Add(optionParam);
+                        cmd.Parameters.Add(guildIdParameter);
+                        cmd.Parameters.Add(valueParameter);
+                        optionParam.Value = option;
+                        guildIdParameter.Value = guildId;
+                        valueParameter.Value = value;
+                        //Execute query
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SQLiteException exc)
+            {
                 Console.WriteLine(exc.Message);
-                //Console.WriteLine("User already in database or error has occured");
+                //Console.WriteLine("Error has occurred");
 
             }
         }

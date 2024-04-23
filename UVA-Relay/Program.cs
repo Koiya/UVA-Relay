@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
@@ -25,7 +21,7 @@ namespace UVA_Relay {
             //SQL initialize
             SQL db = new SQL();
             // Get tokens from toml file
-            TomlDocument document = TomlParser.ParseFile(@Environment.GetEnvironmentVariable("config"));
+            TomlDocument document = TomlParser.ParseFile(Environment.GetEnvironmentVariable("config"));
             // document.GetSubTable("keys").GetString("BOT_TOKEN"));
             Canvas.CanvasApi = new Api(document.GetSubTable("keys").GetString("UVA_RELAY_CANVAS_TOKEN"),
                 "https://uview.instructure.com/api/v1/");
@@ -69,10 +65,10 @@ namespace UVA_Relay {
                         {
                             ulong memId = member.Key;
                             db.AddUsersToDatabase(memId,guildId);
-                            Console.WriteLine(member.Value.Username);
+                            //Console.WriteLine(member.Value.Username);
                         }
                         db.AddGuildToDatabase(guildName, guildId);
-                        Console.WriteLine($"Guild Name:{guildName}, Guild ID: {guildId}");
+                        //Console.WriteLine($"Guild Name:{guildName}, Guild ID: {guildId}");
                     }
                     catch (Exception ex)
                     {
@@ -91,7 +87,7 @@ namespace UVA_Relay {
             slash.RegisterCommands<PingCommandGroup>(testGuildId);
             slash.RegisterCommands<FetchCommandGroup>(testGuildId);
             slash.RegisterCommands<GetCommandGroup>(testGuildId);
-            
+            slash.RegisterCommands<AdminCommandGroup>(testGuildId);
             
             //turn into global commands for multiple servers
             /*slash.RegisterCommands<AppCommands>();
