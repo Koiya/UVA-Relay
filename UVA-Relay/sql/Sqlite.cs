@@ -3,14 +3,11 @@ using System.Data.SQLite;
 /*
  TODO
  - set up sqlite with a test server
- - Implement a way to save or store settings 
  - Display guild settings with embed message
     Name
     option1 : value
     option2 : value
     ...
- - Test to see if discord commands saves to settings
- 
 */
 namespace UVA_Relay.sql
 {
@@ -80,7 +77,7 @@ namespace UVA_Relay.sql
 
         }
 
-        //Adds users to database
+        //Adds users in a guild to database
         public void AddUsersToDatabase(ulong discordId, ulong guildId)
         {
             var s = new SQLiteConnection(@_dbFile);
@@ -119,7 +116,7 @@ namespace UVA_Relay.sql
             }
         }
         //Update guild settings to database
-        public void UpdateGuildSettings(ulong guildId, long value, string option)
+        public void UpdateGuildSettings(long guildId, long value, string option)
         {
             var s = new SQLiteConnection(@_dbFile);
             try
@@ -141,6 +138,46 @@ namespace UVA_Relay.sql
                         cmd.Parameters.Add(valueParameter);
                         optionParam.Value = option;
                         guildIdParameter.Value = guildId;
+                        valueParameter.Value = value;
+                        //Execute query
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SQLiteException exc)
+            {
+                Console.WriteLine(exc.Message);
+                //Console.WriteLine("Error has occurred");
+
+            }
+        }
+        //Update guild settings to database
+        public void UpdateDiscordUserSettings(string discordId, string guildId, long value, string option)
+        {
+            var s = new SQLiteConnection(@_dbFile);
+            try
+            {
+                using (s)
+                {
+                    using (var cmd = s.CreateCommand())
+                    {
+                        s.Open();
+                        cmd.CommandText = $"UPDATE USER SET {option} = @valueQuery WHERE GuildId = @GuildIdQuery AND DiscordID = @DiscordIdQuery";
+                        var optionParam = cmd.CreateParameter();
+                        var guildIdParameter = cmd.CreateParameter();
+                        var discordIdParameter = cmd.CreateParameter();
+                        var valueParameter = cmd.CreateParameter();
+                        optionParam.ParameterName = "@optionQuery";
+                        guildIdParameter.ParameterName = "@GuildIdQuery";
+                        discordIdParameter.ParameterName = "@DiscordIdQuery";
+                        valueParameter.ParameterName = "@valueQuery";
+                        cmd.Parameters.Add(optionParam);
+                        cmd.Parameters.Add(guildIdParameter);
+                        cmd.Parameters.Add(discordIdParameter);
+                        cmd.Parameters.Add(valueParameter);
+                        optionParam.Value = option;
+                        guildIdParameter.Value = guildId;
+                        discordIdParameter.Value = discordId;
                         valueParameter.Value = value;
                         //Execute query
                         cmd.ExecuteNonQuery();

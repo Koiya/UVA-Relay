@@ -26,7 +26,7 @@ using static UVACanvasAccess.ApiParts.Api;
  * Make command to insert new users into database
  * gathers all users in that guild and insert into database
    /get users insert {guildid} 
- * after making update command, can make update settings command
+ * after making update command
  */
 
 
@@ -167,7 +167,7 @@ namespace UVA_Relay {
             catch (Exception ex)
             {
                 await ctx.EditResponseAsync(
-                    new DiscordWebhookBuilder().WithContent($"Error getting information. {ex.ToString()}"));
+                    new DiscordWebhookBuilder().WithContent($"Error getting information. {ex}"));
             }
             
 
@@ -187,22 +187,72 @@ namespace UVA_Relay {
     [SlashCommandGroup("admin", "Commands for admin stuff")]
     public class AdminCommandGroup : ApplicationCommandModule
     {
-        [SlashCommandGroup("settings", "Update settings to a guild")]
-        public class AdminSubGroup : ApplicationCommandModule
+        //Change guild settings
+        [SlashCommandGroup("GuildSettings", "Update settings to a guild")]
+        public class GuildSubGroup : ApplicationCommandModule
         {
             [SlashCommand("optionOne", "Change option one")]
-            public async Task ChangeOptionOne(InteractionContext ctx, [Option("value", "change the value")] long value)
+            public async Task ChangeOptionOne(InteractionContext ctx, 
+                [Option("guildId","Guild ID that needs to be changed")] long guildId,
+                [Option("value", "change the value")] long value)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
                 try
                 {
-                    //gets database query result
+                    
                     SQL db = new SQL();
-                    ulong gid = ctx.Guild.Id;
-                    db.UpdateGuildSettings(gid, value,"optionOne");
+                    db.UpdateGuildSettings(guildId, value, "optionOne");
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
-                            .WithContent($"Updated guild settings in Guild ID: {gid} with optionOne: {value}"));
+                            .WithContent($"Updated guild settings in Guild ID: {guildId} with optionOne: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+
+            [SlashCommand("optionTwo", "Change option one")]
+            public async Task ChangeOptionTwo(InteractionContext ctx, 
+                [Option("guildId","Guild ID that needs to be changed")] long guildId,
+                [Option("value", "change the value")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    SQL db = new SQL();
+                    db.UpdateGuildSettings(guildId, value, "optionTwo");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated guild settings in Guild ID: {guildId} with optionTwo: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+
+        //Change user settings
+        [SlashCommandGroup("UserSettings", "Update user settings in guild")]
+        public class UserSubGroup : ApplicationCommandModule
+        {
+            [SlashCommand("optionOne", "Change option one")]
+            public async Task ChangeOptionOne(InteractionContext ctx, 
+                [Option("discordId", "Discord ID")] string discordId,
+                [Option("guildId", "Guild ID")] string guildId,
+                [Option("value", "Value to be changed to")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    SQL db = new SQL();
+                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionOne");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionOne: {value}"));
 
                 }
                 catch (Exception ex)
@@ -211,18 +261,19 @@ namespace UVA_Relay {
                 }
             }
             [SlashCommand("optionTwo", "Change option one")]
-            public async Task ChangeOptionTwo(InteractionContext ctx, [Option("value", "change the value")] long value)
+            public async Task ChangeOptionTwo(InteractionContext ctx, 
+                [Option("discordId", "Discord ID")] string discordId,
+                [Option("guildId", "Guild ID")] string guildId,
+                [Option("value", "Value to be changed to")] long value)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
                 try
                 {
-                    //gets database query result
                     SQL db = new SQL();
-                    ulong gid = ctx.Guild.Id;
-                    db.UpdateGuildSettings(gid, value,"optionTwo");
+                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionTwo");
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
-                            .WithContent($"Updated guild settings in Guild ID: {gid} with optionTwo: {value}"));
+                            .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionTwo: {value}"));
 
                 }
                 catch (Exception ex)
