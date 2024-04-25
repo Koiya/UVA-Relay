@@ -45,10 +45,11 @@ namespace UVA_Relay {
             var testGuildId = ulong.Parse(document.GetSubTable("keys").GetString("GUILD_ID")
                                           ?? throw new NullReferenceException("UVA_RELAY_TEST_GUILD_ID is unset"));
             var slash = discord.UseSlashCommands();
+            
+            //Slash commands error handler for displaying cooldown and such
             slash.SlashCommandErrored += Utils.CmdErroredHandler;
 
-            // Get all the guilds the bot is in
-            //used for setting up database later
+            // Get all the guilds the bot is in when starting program
             discord.GuildDownloadCompleted += (s, e) =>
             {
                 var guilds = discord.Guilds;
@@ -79,6 +80,52 @@ namespace UVA_Relay {
 
                 return Task.CompletedTask;
             };
+            
+            //Event handlers
+            //Adds new member to database when they join the server
+            discord.GuildMemberAdded += (s, e) =>
+            {
+                var memId = e.Member.Id;
+                var guildId = e.Guild.Id;
+                try
+                {
+                    db.AddUsersToDatabase(memId, guildId);
+                    //debug
+                    Console.WriteLine($"Added ID: {memId} Name:{e.Member.Nickname} to ID: {guildId} Name: {e.Guild.Name}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+                return Task.CompletedTask;
+            };
+            //Adds new guilds to database when bot joins a new server
+            discord.GuildCreated += (s, e) =>
+            {
+                var guildName = e.Guild.Name;
+                var guildId = e.Guild.Id;
+                var memCount = e.Guild.Members;
+                try
+                {
+                    db.AddGuildToDatabase(guildName, guildId);
+                    
+                    //adds all users in guild to database
+                    foreach (var member in memCount)
+                    {
+                        ulong memId = member.Key;
+                        db.AddUsersToDatabase(memId,guildId);
+                    }
+                    //Debug
+                    Console.WriteLine($"Added ID: {guildId} Name:{guildName} to database");
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+                return Task.CompletedTask;
+            };
+
             //DELETES GUILD COMMANDS
             //slash.RegisterCommands<ApplicationCommandModule>();
             
