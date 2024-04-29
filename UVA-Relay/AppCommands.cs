@@ -19,14 +19,7 @@ using static UVA_Relay.Utils;
 using static UVACanvasAccess.ApiParts.Api;
 /*
  * TODO
- * Make update command to update users information into the database
- * Maybe make one for individual and one for all
-   /update user {guildid} {userid}
-   /update allUsers   
- * Make command to insert new users into database
- * gathers all users in that guild and insert into database
-   /get users insert {guildid} 
- * after making update command
+ * uh
  */
 
 
@@ -187,6 +180,65 @@ namespace UVA_Relay {
     [SlashCommandGroup("admin", "Commands for admin stuff")]
     public class AdminCommandGroup : ApplicationCommandModule
     {
+        //Add user/guild to db
+        [SlashCommandGroup("add", "add user/guild to db")]
+        public class AddToDatabase
+        {
+            [SlashCommand("User", "add a user to the database")]
+            public async Task AddUser(InteractionContext ctx,
+                [Option("guildId", "Guild ID")] long guildId,
+                [Option("discordId", "Discord ID")] long discordId)
+            {
+                await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder());
+                try
+                {
+                    SQL db = new SQL();
+                    ulong discordIdToUlong = (ulong)discordId;
+                    ulong guildIdToUlong = (ulong)guildId;
+                    db.AddUsersToDatabase(discordIdToUlong, guildIdToUlong);
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent(
+                                $"Added discord user:{discordIdToUlong} with Guild: {guildIdToUlong} to the database."));
+
+                }
+                catch (Exception ex)
+                {
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"An error has occurred."));
+
+                }
+            }
+
+            [SlashCommand("Guild", "add a guild to the database")]
+            public async Task AddGuild(InteractionContext ctx,
+                [Option("guildName", "Name of guild")] string guildName,
+                [Option("guildId", "Guild ID")] long guildId
+            )
+            {
+                await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder());
+                try
+                {
+                    SQL db = new SQL();
+                    ulong guildIdToUlong = (ulong)guildId;
+                    db.AddGuildToDatabase(guildName, guildIdToUlong);
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Added Guild: {guildName} ID: {guildIdToUlong} to the database."));
+
+                }
+                catch (Exception ex)
+                {
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"An error has occurred."));
+
+                }
+            }
+        }
         //Change guild settings
         [SlashCommandGroup("GuildSettings", "Update settings to a guild")]
         public class GuildSubGroup : ApplicationCommandModule

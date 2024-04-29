@@ -72,7 +72,6 @@ namespace UVA_Relay.sql
             {
                 //Console.WriteLine(exc.Message);
                 Console.WriteLine("Guild already in database or error has occured");
-
             }
 
         }
