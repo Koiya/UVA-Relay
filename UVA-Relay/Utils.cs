@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.SlashCommands.EventArgs;
 
 namespace UVA_Relay {
     internal static class Utils {
@@ -55,6 +58,19 @@ namespace UVA_Relay {
         internal static IEnumerable<(T, int)> ZipCount<T>(this IEnumerable<T> ie) {
             List<T> list = ie.ToList();
             return list.ZipT(Enumerable.Range(0, list.Count));
+        }
+        //Command error handler when using command attributes
+        public static async Task CmdErroredHandler(SlashCommandsExtension _, SlashCommandErrorEventArgs e)
+        {
+            var failedChecks = ((SlashExecutionChecksFailedException)e.Exception).FailedChecks;
+            foreach (var failedCheck in failedChecks)
+            {
+                if (failedCheck is SlashCooldownAttribute)
+                {
+                    var cdAttribute = (SlashCooldownAttribute)failedCheck;
+                    await e.Context.CreateResponseAsync($"Command can be used in {cdAttribute.GetRemainingCooldown(e.Context).Seconds} seconds.");
+                }
+            }
         }
     }
 }

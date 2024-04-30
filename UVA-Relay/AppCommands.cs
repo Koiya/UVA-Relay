@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using UVA_Relay.sql;
 using UVACanvasAccess.Util;
 using static DSharpPlus.InteractionResponseType;
 using static UVA_Relay.Canvas;
 using static UVA_Relay.Utils;
 using static UVACanvasAccess.ApiParts.Api;
+/*
+ * TODO
+ * uh
+ */
+
 
 // ReSharper disable ClassNeverInstantiated.Global
 namespace UVA_Relay {
@@ -26,7 +33,7 @@ namespace UVA_Relay {
     [SlashCommandGroup("fetch", "Fetch commands..")]
     public class FetchCommandGroup : ApplicationCommandModule {
         
-        [SlashCommand("summary", "Fetches a concise summary of a course.")]
+        [SlashCommand("summary", "Fetches a concise summary of a course."), SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task FetchCourseSummary(InteractionContext ctx, 
                                              [Option("courseId", "The course ID.")] long courseId) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
@@ -66,7 +73,7 @@ namespace UVA_Relay {
             }
         }
 
-        [SlashCommand("assignments", "Fetches all upcoming assignments.")]
+        [SlashCommand("assignments", "Fetches all upcoming assignments."), SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task FetchUpcomingAssignments(InteractionContext ctx,
                                                    [Option("courseId", "The course ID.")] long courseId) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
@@ -101,12 +108,12 @@ namespace UVA_Relay {
     [SlashCommandGroup("ping", "Ping commands.")]
     public class PingCommandGroup : ApplicationCommandModule {
         
-        [SlashCommand("bot", "Pings the bot..")]
+        [SlashCommand("bot", "Pings the bot.."),SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task Ping(InteractionContext ctx) {
             await ctx.CreateResponseAsync(ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Pong."));
         }
 
-        [SlashCommand("canvas", "Pings Canvas..")]
+        [SlashCommand("canvas", "Pings Canvas.."),SlashCooldown(1,5, SlashCooldownBucketType.User)]
         public async Task CanvasPing(InteractionContext ctx) {
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
 
@@ -136,7 +143,7 @@ namespace UVA_Relay {
     public class GetCommandGroup : ApplicationCommandModule
     {
         
-        [SlashCommand("user", "get user information")]
+        [SlashCommand("user", "get user information"), SlashCooldown(1,5,SlashCooldownBucketType.User)]
         public async Task UserInfo(InteractionContext ctx)
         {  
             await ctx.CreateResponseAsync(DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -153,13 +160,13 @@ namespace UVA_Relay {
             catch (Exception ex)
             {
                 await ctx.EditResponseAsync(
-                    new DiscordWebhookBuilder().WithContent($"Error getting information. {ex.ToString()}"));
+                    new DiscordWebhookBuilder().WithContent($"Error getting information. {ex}"));
             }
             
 
         }
 
-        [SlashCommand("test", "test")]
+        [SlashCommand("test", "test"), SlashCooldown(1,1, SlashCooldownBucketType.User)]
         public async Task TestInfo(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -169,4 +176,163 @@ namespace UVA_Relay {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Thanks for waiting!"));
         }
     }
-}
+
+    [SlashCommandGroup("admin", "Commands for admin stuff")]
+    public class AdminCommandGroup : ApplicationCommandModule
+    {
+        //Add user/guild to db
+        [SlashCommandGroup("add", "add user/guild to db")]
+        public class AddToDatabase
+        {
+            [SlashCommand("User", "add a user to the database")]
+            public async Task AddUser(InteractionContext ctx,
+                [Option("guildId", "Guild ID")] long guildId,
+                [Option("discordId", "Discord ID")] long discordId)
+            {
+                await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder());
+                try
+                {
+                    SQL db = new SQL();
+                    ulong discordIdToUlong = (ulong)discordId;
+                    ulong guildIdToUlong = (ulong)guildId;
+                    db.AddUsersToDatabase(discordIdToUlong, guildIdToUlong);
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent(
+                                $"Added discord user:{discordIdToUlong} with Guild: {guildIdToUlong} to the database."));
+
+                }
+                catch (Exception ex)
+                {
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"An error has occurred."));
+
+                }
+            }
+
+            [SlashCommand("Guild", "add a guild to the database")]
+            public async Task AddGuild(InteractionContext ctx,
+                [Option("guildName", "Name of guild")] string guildName,
+                [Option("guildId", "Guild ID")] long guildId
+            )
+            {
+                await ctx.CreateResponseAsync(DeferredChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder());
+                try
+                {
+                    SQL db = new SQL();
+                    ulong guildIdToUlong = (ulong)guildId;
+                    db.AddGuildToDatabase(guildName, guildIdToUlong);
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Added Guild: {guildName} ID: {guildIdToUlong} to the database."));
+
+                }
+                catch (Exception ex)
+                {
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"An error has occurred."));
+
+                }
+            }
+        }
+        //Change guild settings
+        [SlashCommandGroup("GuildSettings", "Update settings to a guild")]
+        public class GuildSubGroup : ApplicationCommandModule
+        {
+            [SlashCommand("optionOne", "Change option one")]
+            public async Task ChangeOptionOne(InteractionContext ctx, 
+                [Option("guildId","Guild ID that needs to be changed")] long guildId,
+                [Option("value", "change the value")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    
+                    SQL db = new SQL();
+                    db.UpdateGuildSettings(guildId, value, "optionOne");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated guild settings in Guild ID: {guildId} with optionOne: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+
+            [SlashCommand("optionTwo", "Change option one")]
+            public async Task ChangeOptionTwo(InteractionContext ctx, 
+                [Option("guildId","Guild ID that needs to be changed")] long guildId,
+                [Option("value", "change the value")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    SQL db = new SQL();
+                    db.UpdateGuildSettings(guildId, value, "optionTwo");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated guild settings in Guild ID: {guildId} with optionTwo: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+
+        //Change user settings
+        [SlashCommandGroup("UserSettings", "Update user settings in guild")]
+        public class UserSubGroup : ApplicationCommandModule
+        {
+            [SlashCommand("optionOne", "Change option one")]
+            public async Task ChangeOptionOne(InteractionContext ctx, 
+                [Option("discordId", "Discord ID")] string discordId,
+                [Option("guildId", "Guild ID")] string guildId,
+                [Option("value", "Value to be changed to")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    SQL db = new SQL();
+                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionOne");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionOne: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            [SlashCommand("optionTwo", "Change option one")]
+            public async Task ChangeOptionTwo(InteractionContext ctx, 
+                [Option("discordId", "Discord ID")] string discordId,
+                [Option("guildId", "Guild ID")] string guildId,
+                [Option("value", "Value to be changed to")] long value)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                try
+                {
+                    SQL db = new SQL();
+                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionTwo");
+                    await ctx.EditResponseAsync(
+                        new DiscordWebhookBuilder()
+                            .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionTwo: {value}"));
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+    }
+}   
