@@ -28,7 +28,11 @@ namespace UVA_Relay.sql
                     using (var cmd = s.CreateCommand())
                     {
                         s.Open();
-                        cmd.CommandText = $"SELECT id FROM GUILD where guildID = {guildId}";
+                        cmd.CommandText = $"SELECT id FROM GUILD where guildID = @guildIdQuery";
+                        var guildIdParameter = cmd.CreateParameter();
+                        guildIdParameter.ParameterName = "@guildIdQuery";
+                        cmd.Parameters.Add(guildIdParameter);
+                        guildIdParameter.Value = guildId;
                         result = cmd.ExecuteScalar().ToString();
                     }
                 }
@@ -132,10 +136,9 @@ namespace UVA_Relay.sql
                         optionParam.ParameterName = "@optionQuery";
                         guildIdParameter.ParameterName = "@GuildIdQuery";
                         valueParameter.ParameterName = "@valueQuery";
-                        cmd.Parameters.Add(optionParam);
+                        cmd.Parameters.AddWithValue("@optionQuery", option);
                         cmd.Parameters.Add(guildIdParameter);
                         cmd.Parameters.Add(valueParameter);
-                        optionParam.Value = option;
                         guildIdParameter.Value = guildId;
                         valueParameter.Value = value;
                         //Execute query
@@ -150,7 +153,7 @@ namespace UVA_Relay.sql
 
             }
         }
-        //Update guild settings to database
+        //Update discord user settings to database
         public void UpdateDiscordUserSettings(string discordId, string guildId, long value, string option)
         {
             var s = new SQLiteConnection(@_dbFile);
@@ -170,11 +173,10 @@ namespace UVA_Relay.sql
                         guildIdParameter.ParameterName = "@GuildIdQuery";
                         discordIdParameter.ParameterName = "@DiscordIdQuery";
                         valueParameter.ParameterName = "@valueQuery";
-                        cmd.Parameters.Add(optionParam);
                         cmd.Parameters.Add(guildIdParameter);
                         cmd.Parameters.Add(discordIdParameter);
                         cmd.Parameters.Add(valueParameter);
-                        optionParam.Value = option;
+                        cmd.Parameters.AddWithValue("@optionQuery", option);
                         guildIdParameter.Value = guildId;
                         discordIdParameter.Value = discordId;
                         valueParameter.Value = value;

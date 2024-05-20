@@ -184,7 +184,7 @@ namespace UVA_Relay {
         [SlashCommandGroup("add", "add user/guild to db")]
         public class AddToDatabase
         {
-            [SlashCommand("User", "add a user to the database")]
+            [SlashCommand("User", "add a user to the database"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task AddUser(InteractionContext ctx,
                 [Option("guildId", "Guild ID")] long guildId,
                 [Option("discordId", "Discord ID")] long discordId)
@@ -243,7 +243,10 @@ namespace UVA_Relay {
         [SlashCommandGroup("GuildSettings", "Update settings to a guild")]
         public class GuildSubGroup : ApplicationCommandModule
         {
-            [SlashCommand("optionOne", "Change option one")]
+            //Change one of the settings of a guild 
+            //Placeholder name is optionOne
+            //Can be renamed to fit description for each settings
+            [SlashCommand("optionOne", "Change option one"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task ChangeOptionOne(InteractionContext ctx, 
                 [Option("guildId","Guild ID that needs to be changed")] long guildId,
                 [Option("value", "change the value")] long value)
@@ -264,8 +267,9 @@ namespace UVA_Relay {
                     Console.WriteLine(ex);
                 }
             }
-
-            [SlashCommand("optionTwo", "Change option one")]
+            //^^^^^
+            //Same as optionOne
+            [SlashCommand("optionTwo", "Change option one"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task ChangeOptionTwo(InteractionContext ctx, 
                 [Option("guildId","Guild ID that needs to be changed")] long guildId,
                 [Option("value", "change the value")] long value)
@@ -291,7 +295,10 @@ namespace UVA_Relay {
         [SlashCommandGroup("UserSettings", "Update user settings in guild")]
         public class UserSubGroup : ApplicationCommandModule
         {
-            [SlashCommand("optionOne", "Change option one")]
+            //Change one of the settings of the user
+            //Placeholder name is optionOne
+            //Can be renamed to fit description for each settings
+            [SlashCommand("optionOne", "Change option one"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task ChangeOptionOne(InteractionContext ctx, 
                 [Option("discordId", "Discord ID")] string discordId,
                 [Option("guildId", "Guild ID")] string guildId,
@@ -312,7 +319,9 @@ namespace UVA_Relay {
                     Console.WriteLine(ex);
                 }
             }
-            [SlashCommand("optionTwo", "Change option one")]
+            //^^^^
+            //Same as optionOne
+            [SlashCommand("optionTwo", "Change option one"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task ChangeOptionTwo(InteractionContext ctx, 
                 [Option("discordId", "Discord ID")] string discordId,
                 [Option("guildId", "Guild ID")] string guildId,
