@@ -1,14 +1,5 @@
 using System;
 using System.Data.SQLite;
-/*
- TODO
- - set up sqlite with a test server
- - Display guild settings with embed message
-    Name
-    option1 : value
-    option2 : value
-    ...
-*/
 namespace UVA_Relay.sql
 {
     public class SQL
@@ -29,10 +20,7 @@ namespace UVA_Relay.sql
                     {
                         s.Open();
                         cmd.CommandText = $"SELECT id FROM GUILD where guildID = @guildIdQuery";
-                        var guildIdParameter = cmd.CreateParameter();
-                        guildIdParameter.ParameterName = "@guildIdQuery";
-                        cmd.Parameters.Add(guildIdParameter);
-                        guildIdParameter.Value = guildId;
+                        cmd.Parameters.AddWithValue("@guildIdQuery", guildId);
                         result = cmd.ExecuteScalar().ToString();
                     }
                 }
@@ -58,15 +46,8 @@ namespace UVA_Relay.sql
                     {
                         s.Open();
                         cmd.CommandText = "INSERT INTO GUILD (GuildName, GuildId) VALUES(@nameQuery, @idQuery)";
-                        //Safest way to insert data without sql injections?
-                        var nameParameter = cmd.CreateParameter();
-                        var idParameter = cmd.CreateParameter();
-                        nameParameter.ParameterName = "@nameQuery";
-                        idParameter.ParameterName = "@idQuery";
-                        cmd.Parameters.Add(nameParameter);
-                        cmd.Parameters.Add(idParameter);
-                        nameParameter.Value = guildName;
-                        idParameter.Value = guildId;
+                        cmd.Parameters.AddWithValue("@nameQuery", guildName);
+                        cmd.Parameters.AddWithValue("@idQuery",guildId);
                         //Execute query
                         cmd.ExecuteNonQuery();
                     }
@@ -93,19 +74,8 @@ namespace UVA_Relay.sql
                         s.Open();
                         //"INSERT INTO USER (discordId, canvasId) VALUES(@discordIdQuery, @canvasIdQuery)";
                         cmd.CommandText = "INSERT INTO USER (discordId, guildId) VALUES(@discordIdQuery, @guildIdQuery)";
-                        //Safest way to insert data without sql injections?
-                        var discordIdParameter = cmd.CreateParameter();
-                        //var canvasIdParameter = cmd.CreateParameter();
-                        var guildIdParameter = cmd.CreateParameter();
-                        discordIdParameter.ParameterName = "@discordIdQuery";
-                        guildIdParameter.ParameterName = "@guildIdQuery";
-                        //canvasIdParameter.ParameterName = "@canvasIdQuery";
-                        cmd.Parameters.Add(discordIdParameter);
-                        cmd.Parameters.Add(guildIdParameter);
-                        //cmd.Parameters.Add(canvasIdParameter);
-                        discordIdParameter.Value = discordId;
-                        guildIdParameter.Value = guildId;
-                        //canvasIdParameter.Value = ;
+                        cmd.Parameters.AddWithValue( "@discordIdQuery",discordId);
+                        cmd.Parameters.AddWithValue( "@guildIdQuery",guildId);
                         //Execute query
                         cmd.ExecuteNonQuery();
                     }
@@ -119,7 +89,36 @@ namespace UVA_Relay.sql
             }
         }
         //Update guild settings to database
-        public void UpdateGuildSettings(long guildId, long value, string option)
+        //Change optionOne Guild
+        //Placeholder name
+        public void UpdateGuildSettingsOptionOne(long guildId, long value)
+                 {
+                     var s = new SQLiteConnection(@_dbFile);
+                     try
+                     {
+                         using (s)
+                         {
+                             using (var cmd = s.CreateCommand())
+                             {
+                                 s.Open();
+                                 cmd.CommandText = $"UPDATE GUILD SET OptionOne = @valueQuery WHERE GuildId = @GuildIdQuery";
+                                 cmd.Parameters.AddWithValue("@GuildIdQuery",guildId);
+                                 cmd.Parameters.AddWithValue("@valueQuery",value);
+         
+                                 //Execute query
+                                 cmd.ExecuteNonQuery();
+                             }
+                         }
+                     }
+                     catch (SQLiteException exc)
+                     {
+                         Console.WriteLine(exc.Message);
+                         //Console.WriteLine("Error has occurred");
+         
+                     }
+                 }
+        //Change OptionTwo Guild
+        public void UpdateGuildSettingsOptionTwo(long guildId, long value)
         {
             var s = new SQLiteConnection(@_dbFile);
             try
@@ -129,18 +128,10 @@ namespace UVA_Relay.sql
                     using (var cmd = s.CreateCommand())
                     {
                         s.Open();
-                        cmd.CommandText = $"UPDATE GUILD SET {option} = @valueQuery WHERE GuildId = @GuildIdQuery";
-                        var optionParam = cmd.CreateParameter();
-                        var guildIdParameter = cmd.CreateParameter();
-                        var valueParameter = cmd.CreateParameter();
-                        optionParam.ParameterName = "@optionQuery";
-                        guildIdParameter.ParameterName = "@GuildIdQuery";
-                        valueParameter.ParameterName = "@valueQuery";
-                        cmd.Parameters.AddWithValue("@optionQuery", option);
-                        cmd.Parameters.Add(guildIdParameter);
-                        cmd.Parameters.Add(valueParameter);
-                        guildIdParameter.Value = guildId;
-                        valueParameter.Value = value;
+                        cmd.CommandText = $"UPDATE GUILD SET OptionTwo = @valueQuery WHERE GuildId = @GuildIdQuery";
+                        cmd.Parameters.AddWithValue("@GuildIdQuery",guildId);
+                        cmd.Parameters.AddWithValue("@valueQuery",value);
+
                         //Execute query
                         cmd.ExecuteNonQuery();
                     }
@@ -154,7 +145,7 @@ namespace UVA_Relay.sql
             }
         }
         //Update discord user settings to database
-        public void UpdateDiscordUserSettings(string discordId, string guildId, long value, string option)
+        public void UpdateDiscordUserSettingsOptionOne(string discordId, string guildId, long value)
         {
             var s = new SQLiteConnection(@_dbFile);
             try
@@ -164,22 +155,36 @@ namespace UVA_Relay.sql
                     using (var cmd = s.CreateCommand())
                     {
                         s.Open();
-                        cmd.CommandText = $"UPDATE USER SET {option} = @valueQuery WHERE GuildId = @GuildIdQuery AND DiscordID = @DiscordIdQuery";
-                        var optionParam = cmd.CreateParameter();
-                        var guildIdParameter = cmd.CreateParameter();
-                        var discordIdParameter = cmd.CreateParameter();
-                        var valueParameter = cmd.CreateParameter();
-                        optionParam.ParameterName = "@optionQuery";
-                        guildIdParameter.ParameterName = "@GuildIdQuery";
-                        discordIdParameter.ParameterName = "@DiscordIdQuery";
-                        valueParameter.ParameterName = "@valueQuery";
-                        cmd.Parameters.Add(guildIdParameter);
-                        cmd.Parameters.Add(discordIdParameter);
-                        cmd.Parameters.Add(valueParameter);
-                        cmd.Parameters.AddWithValue("@optionQuery", option);
-                        guildIdParameter.Value = guildId;
-                        discordIdParameter.Value = discordId;
-                        valueParameter.Value = value;
+                        cmd.CommandText = $"UPDATE USER SET OptionOne = @valueQuery WHERE GuildId = @GuildIdQuery AND DiscordID = @DiscordIdQuery";
+                        cmd.Parameters.AddWithValue("@GuildIdQuery",guildId);
+                        cmd.Parameters.AddWithValue("@DiscordIdQuery",discordId);
+                        cmd.Parameters.AddWithValue("@valueQuery",value);
+                        //Execute query
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (SQLiteException exc)
+            {
+                Console.WriteLine(exc.Message);
+                //Console.WriteLine("Error has occurred");
+
+            }
+        }
+        public void UpdateDiscordUserSettingsOptionTwo(string discordId, string guildId, long value)
+        {
+            var s = new SQLiteConnection(@_dbFile);
+            try
+            {
+                using (s)
+                {
+                    using (var cmd = s.CreateCommand())
+                    {
+                        s.Open();
+                        cmd.CommandText = $"UPDATE USER SET OptionTwo = @valueQuery WHERE GuildId = @GuildIdQuery AND DiscordID = @DiscordIdQuery";
+                        cmd.Parameters.AddWithValue("@GuildIdQuery",guildId);
+                        cmd.Parameters.AddWithValue("@DiscordIdQuery",discordId);
+                        cmd.Parameters.AddWithValue("@valueQuery",value);
                         //Execute query
                         cmd.ExecuteNonQuery();
                     }

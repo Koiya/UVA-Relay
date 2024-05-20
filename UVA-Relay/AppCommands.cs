@@ -256,7 +256,7 @@ namespace UVA_Relay {
                 {
                     
                     SQL db = new SQL();
-                    db.UpdateGuildSettings(guildId, value, "optionOne");
+                    db.UpdateGuildSettingsOptionOne(guildId, value);
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
                             .WithContent($"Updated guild settings in Guild ID: {guildId} with optionOne: {value}"));
@@ -269,7 +269,7 @@ namespace UVA_Relay {
             }
             //^^^^^
             //Same as optionOne
-            [SlashCommand("optionTwo", "Change option one"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
+            [SlashCommand("optionTwo", "Change option two"), SlashCooldown(1,5, SlashCooldownBucketType.User)]
             public async Task ChangeOptionTwo(InteractionContext ctx, 
                 [Option("guildId","Guild ID that needs to be changed")] long guildId,
                 [Option("value", "change the value")] long value)
@@ -278,7 +278,7 @@ namespace UVA_Relay {
                 try
                 {
                     SQL db = new SQL();
-                    db.UpdateGuildSettings(guildId, value, "optionTwo");
+                    db.UpdateGuildSettingsOptionTwo(guildId, value);
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
                             .WithContent($"Updated guild settings in Guild ID: {guildId} with optionTwo: {value}"));
@@ -308,7 +308,7 @@ namespace UVA_Relay {
                 try
                 {
                     SQL db = new SQL();
-                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionOne");
+                    db.UpdateDiscordUserSettingsOptionOne(discordId,guildId, value);
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
                             .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionOne: {value}"));
@@ -331,7 +331,7 @@ namespace UVA_Relay {
                 try
                 {
                     SQL db = new SQL();
-                    db.UpdateDiscordUserSettings(discordId,guildId, value,"optionTwo");
+                    db.UpdateDiscordUserSettingsOptionTwo(discordId,guildId, value);
                     await ctx.EditResponseAsync(
                         new DiscordWebhookBuilder()
                             .WithContent($"Updated discord user: {discordId} in guild: {guildId} with optionTwo: {value}"));
